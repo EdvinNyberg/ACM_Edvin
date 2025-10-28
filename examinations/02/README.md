@@ -112,9 +112,17 @@ incompatibilities.
 
 What happens if you run `ansible-inventory --list` in the directory you created above?
 
+It shows you the whole inventory from hosts via ansible.cfg 
+It's detailed and shows all groups and IP's in a JSON-format 
+
+
+
 ## QUESTION B
 
 What happens if you run `ansible-inventory --graph` in the directory you created above?
+
+
+Graph is pretty much the same except it gives you a textbased graph instead. 
 
 ## QUESTION C
 

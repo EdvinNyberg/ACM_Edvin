@@ -53,12 +53,16 @@ module.
 
 How can we make the web server start with an addition of just one line to the playbook above?
 
+
+
 # QUESTION B
 
 You make have noted that the `become: true` statement has moved from a specific task to the beginning
 of the playbook, and is on the same indentation level as `tasks:`.
 
 What does this accomplish?
+
+This makes it have an elevated privelege, so it applies to everything beneath it. 
 
 # QUESTION C
 
@@ -71,6 +75,10 @@ Run the new playbook, then make sure that the web server is not running (you can
 log in to the machine and make sure that there are no `nginx` processes running.
 
 Why did we change the order of the tasks in the `04-uninstall-webserver.yml` playbook?
+
+1. We need to disable nginx first, so we change the state from latest to absent - Absent(Remove packages) 
+2. Change enabled to false, we need to think about the order - we must stop the service then remove it. 
+3. Change the name to delete or something more appropriate 
 
 # BONUS QUESTION
 

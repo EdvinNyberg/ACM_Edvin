@@ -121,9 +121,14 @@ Run the exact same playbook again and study the output. What is the difference?
 
 What does the `ansible.builtin.debug` module actually do?
 
+The ansible debug gives us a feedback on what we're doing, and when we want it to say something. Also, you can alter the module to give us feedback based on criterias, just like if-statements in Python. 
+
 ## QUESTION B
 
 What is the variable 'ansible_facts' and where does it come from?
+
+So Ansible_facts is like a dictionary within Ansible, and when you run your server it gathers their hardware and software informations, and the results is saved in ansible_facts after ansible_gather has done its magic
+
 
 ## QUESTION C
 
@@ -133,6 +138,9 @@ next time we run the playbook. This is a concept called _idempotency_.
 How do we now remove the software we installed through the playbook above? Make the
 playbook remove the exact same software we previously installed. Call the created
 playbook `03-uninstall-software.yml`.
+
+We just change from present to absent.
+
 
 ## BONUS QUESTION
 
