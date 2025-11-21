@@ -121,9 +121,13 @@ Run the exact same playbook again and study the output. What is the difference?
 
 What does the `ansible.builtin.debug` module actually do?
 
+A: It prints a message or variable to the console.
+
 ## QUESTION B
 
 What is the variable 'ansible_facts' and where does it come from?
+
+A: 'ansible_facts' is a dictionary of system information automatically gathered by Ansible when it runs a playbook.
 
 ## QUESTION C
 
@@ -142,6 +146,14 @@ Explain what each of these options do:
 * --verbose, -vv, -vvv, -vvvv
 * --check
 * --syntax-check
+
+A:
+--verbose / -v:	Prints more detailed output. Useful for debugging.
+-vv:	Even more verbosity, shows task execution details.
+-vvv:	Shows detailed SSH connection info and variables.
+-vvvv:	Debug level, prints all internal Ansible messages (very verbose).
+--check:	Dry run: simulates the playbook without making changes. Useful to see what would happen.
+--syntax-check:	Checks the YAML/playbook syntax without executing it. Ensures there are no errors.
 
 ## Study Material & Documentation
 

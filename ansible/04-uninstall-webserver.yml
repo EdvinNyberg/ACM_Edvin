@@ -1,0 +1,27 @@
+---
+# Playbook: Uninstall webserver
+# Purpose: Stop the web server service and remove its package on hosts in the `web` group.
+# Notes:
+# - `hosts: web` targets hosts in the inventory group named `web`.
+# - `become: true` runs all tasks with privilege escalation (required for service/package operations).
+- name: Uninstall webserver
+  hosts: web
+  # Run tasks as root (or with configured privilege escalation method)
+  become: true
+  tasks:
+    - name: Stop and disable nginx
+      # Use the service module to manage the nginx system service
+      ansible.builtin.service:
+        # Name of the system service to manage
+        name: nginx
+        # Ensure service is stopped immediately
+        state: stopped
+        # Prevent service from starting on boot
+        enabled: false
+    - name: Remove nginx package
+      # Use the generic package module so this works across distributions
+      ansible.builtin.package:
+        # Package name to remove. Adjust for distro-specific package names if necessary.
+        name: nginx
+# Playbook: Uninstall webserver
+        state: absent

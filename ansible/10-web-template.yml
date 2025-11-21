@@ -1,0 +1,34 @@
+---
+# This playbook deploys an nginx configuration from a Jinja2 template, creates the web root, uploads content, and restarts nginx to serve a custom HTTPS site.
+- name: Install HTTPS config for nginx
+  hosts: web
+  become: yes
+
+  tasks:
+
+    # Renders the Jinja2 template with variables to create a customized nginx configuration file.
+    - name: Install example.internal.conf (templated)
+      ansible.builtin.template:
+        src: example.internal.conf.j2
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    # Creates the directory structure where the website content will be served from.
+    - name: Ensure web root directory exists
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+
+    # Deploys the custom index.html file to the web root so nginx can serve it.
+    - name: Upload custom index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+
+    # Restarts nginx to apply the new configuration and activate the HTTPS site.
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

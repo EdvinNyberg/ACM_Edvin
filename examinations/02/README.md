@@ -112,9 +112,54 @@ incompatibilities.
 
 What happens if you run `ansible-inventory --list` in the directory you created above?
 
+A: I get this output(JSON):
+
+    {
+    "_meta": {
+        "hostvars": {
+            "192.168.121.151": {
+                "ansible_ssh_private_key_file": "/home/edvin/ACM_Edvin/lab_environment/deploy_key",
+                "ansible_user": "deploy"
+            },
+            "192.168.121.154": {
+                "ansible_ssh_private_key_file": "/home/edvin/ACM_Edvin/lab_environment/deploy_key",
+                "ansible_user": "deploy"
+            }
+        }
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "db",
+            "web"
+        ]
+    },
+    "db": {
+        "hosts": [
+            "192.168.121.154"
+        ]
+    },
+    "web": {
+        "hosts": [
+            "192.168.121.151"
+        ]
+    }
+}
+
+
 ## QUESTION B
 
 What happens if you run `ansible-inventory --graph` in the directory you created above?
+
+A: I get this output:
+
+    @all:
+  |--@ungrouped:
+  |--@db:
+  |  |--192.168.121.154
+  |--@web:
+  |  |--192.168.121.151
+
 
 ## QUESTION C
 
@@ -131,6 +176,8 @@ Now run:
 Study the output of this command.
 
 What does the `ansible_connection=local` part mean?
+
+A: This tells Ansible to run commands locally on the machine instead of over SSH.
 
 ## BONUS QUESTION
 
@@ -152,4 +199,6 @@ In your Ansible working directory where the `ansible.cfg' is, run
 
 You should get a pager displaying all available configuration values. How does it differ
 from when you run the same command in your usual home directory?
+
+A: It differs from your home directory because Ansible uses ansible.cfg in the current working directory first.
 

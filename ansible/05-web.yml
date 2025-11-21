@@ -1,0 +1,24 @@
+---
+- name: Install HTTPS config for nginx
+  hosts: web
+  become: true
+
+  # This play runs on hosts in the `web` inventory group and requires privilege escalation
+  # because it writes to system configuration directories and manages services.
+  tasks:
+    - name: Install https.conf into nginx conf.d
+      # Copy the local `files/https.conf` file from the playbook tree to the target server
+      # into `/etc/nginx/conf.d/https.conf` with root ownership and 0644 permissions.
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart nginx to load HTTPS config
+      # Restart the nginx service so the newly copied configuration takes effect.
+      # `state: restarted` will stop and start the service if it's running, or start it if stopped.
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

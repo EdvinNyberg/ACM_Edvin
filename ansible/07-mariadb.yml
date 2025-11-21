@@ -1,0 +1,26 @@
+---
+- hosts: db
+  # Run tasks with privilege escalation because installing packages
+  # and managing services require elevated permissions.
+  become: true
+
+  tasks:
+    - name: Ensure MariaDB-server is installed
+      # Use the generic package module so the task works across distributions
+      # (it delegates to apt/yum/dnf/etc. as appropriate).
+      ansible.builtin.package:
+        name: mariadb-server
+        state: present
+
+    - name: Ensure mariadb service is enabled at boot
+      # Ensure the MariaDB service is enabled so it starts automatically on boot.
+      ansible.builtin.service:
+        name: mariadb
+        enabled: yes
+
+    - name: Ensure mariadb service is started
+      # Ensure the MariaDB service is running now. This will start the service
+      # if it is not already running.
+      ansible.builtin.service:
+        name: mariadb
+        state: started

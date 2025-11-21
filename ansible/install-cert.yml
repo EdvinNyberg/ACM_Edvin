@@ -1,0 +1,39 @@
+---
+# This playbook creates self-signed SSL/TLS certificates and the necessary directory structure for nginx to serve HTTPS traffic.
+- name: Set up self-signed certificates for HTTPS
+  hosts: web
+  become: true
+  tasks:
+    # Creates the certificate storage directory with appropriate permissions for nginx.
+    - name: Ensure the /etc/pki/nginx directory exists
+      ansible.builtin.file:
+        path: /etc/pki/nginx
+        state: directory
+        mode: "0755"
+        owner: root
+
+    # Creates a restricted private directory for storing the sensitive private key.
+    - name: Ensure we have a /etc/pkig/nginx/private directory
+      ansible.builtin.file:
+        path: /etc/pki/nginx/private
+        state: directory
+        mode: "0700"
+        owner: root
+
+    # Installs the Python cryptography library needed for certificate generation.
+    - name: Ensure we have necessary software installed
+      ansible.builtin.package:
+        name: python3-cryptography
+        state: present
+
+    # Generates a private key file used to create and sign the self-signed certificate.
+    - name: Ensure we have a private key for our certificate
+      community.crypto.openssl_privatekey:
+        path: /etc/pki/nginx/private/server.key
+
+    # Creates a self-signed X.509 certificate signed with the private key for HTTPS.
+    - name: Create a self-signed certificate
+      community.crypto.x509_certificate:
+        path: /etc/pki/nginx/server.crt
+        privatekey_path: /etc/pki/nginx/private/server.key
+        provider: selfsigned

@@ -1,0 +1,44 @@
+---
+# tasks file for roles/dbserver
+# Installs MariaDB server package to provide the database backend.
+- name: Ensure MariaDB server is installed
+  ansible.builtin.package:
+    name: mariadb-server
+    state: present
+
+# Installs PyMySQL library so Ansible can manage MariaDB using MySQL modules.
+- name: Ensure PyMySQL library is installed
+  ansible.builtin.package:
+    name: python3-PyMySQL
+    state: present
+
+# Enables MariaDB to start automatically on boot.
+- name: Ensure MariaDB service is enabled
+  ansible.builtin.service:
+    name: mariadb
+    enabled: true
+
+# Starts the MariaDB service to make the database accessible.
+- name: Ensure MariaDB service is started
+  ansible.builtin.service:
+    name: mariadb
+    state: started
+
+# Creates the 'webappdb' database for storing application data.
+- name: Create database 'webappdb'
+  community.mysql.mysql_db:
+    name: webappdb
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    login_user: root
+
+# Creates 'webappuser' with a password and grants full privileges on the webappdb database.
+- name: Create database user 'webappuser'
+  community.mysql.mysql_user:
+    name: webappuser
+    password: "{{ webapp_db_password }}"
+    priv: "webappdb.*:ALL"
+    host: "%"
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+    login_user: root

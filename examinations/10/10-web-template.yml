@@ -1,0 +1,29 @@
+---
+- name: Install HTTPS config for nginx
+  hosts: web
+  become: yes
+
+  tasks:
+
+    - name: Install example.internal.conf (templated)
+      ansible.builtin.template:
+        src: example.internal.conf.j2
+        dest: /etc/nginx/conf.d/example.internal.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure web root directory exists
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+
+    - name: Upload custom index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+
+    - name: Restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted

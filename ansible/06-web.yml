@@ -1,0 +1,52 @@
+---
+- name: Install HTTPS config for nginx
+  hosts: web
+  become: true
+  # This play installs HTTPS and virtual-host configuration for nginx,
+  # creates the webroot for `example.internal`, and uploads a custom index file.
+  # It runs on hosts in the `web` inventory group and requires privilege escalation
+  # to write to `/etc/nginx` and manage system services.
+  tasks:
+    - name: Install https.conf into nginx conf.d
+      # Copy the global HTTPS config into nginx's conf.d directory.
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure /var/www/example.internal/html/ exists
+      # Create the webroot directory for the example.virtual host.
+      # Set ownership to the nginx user and apply SELinux type for HTTP content
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: '0755'
+        setype: httpd_sys_content_t
+      # Register the result so we can restart nginx only when needed
+      register: dir
+
+    - name: Upload custom index.html to example.internal
+      # Place the site HTML file into the created webroot.
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        setype: httpd_sys_content_t
+      register: index
+
+    - name: Ensure the nginx configuration is updated for example.internal
+      # Upload virtual-host configuration for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+      register: vhconfig
+
+    - name: Restart nginx to load HTTPS config
+      # Restart nginx only when one of the previous copy/file tasks made changes.
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: vhconfig.changed or index.changed or dir.changed

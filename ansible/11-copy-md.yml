@@ -1,0 +1,17 @@
+---
+# This playbook deploys all markdown documentation files to the deploy user's home directory for access and reference.
+- name: Copy all .md files to deploy user's home
+  hosts: db
+  become: yes
+
+  tasks:
+    # Copies all markdown files from the local files directory to the deploy user's home with proper ownership and permissions.
+    - name: Copy .md files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: /home/deploy/
+        owner: deploy
+        group: deploy
+        mode: '0644'
+      with_fileglob:
+        - files/*.md

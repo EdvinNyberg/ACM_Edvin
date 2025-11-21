@@ -1,0 +1,3 @@
+ansible-galaxy role init roles/webserver
+
+ansible-galaxy role init roles/dbserver

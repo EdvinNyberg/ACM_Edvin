@@ -1,0 +1,16 @@
+---
+- name: Configure the web server(s) according to specs
+  hosts: web
+  become: yes
+  vars_files:
+    - vault.yml
+  roles:
+    - webserver
+
+- name: Configure the database server(s)
+  hosts: db
+  become: yes
+  vars_files:
+    - vault.yml
+  roles:
+    - dbserver

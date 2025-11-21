@@ -28,6 +28,16 @@ is run.
 When you have run the playbook above successfully, how can you verify that the `mariadb`
 service is started and is running?
 
+A: I ran 'ansible db -a "systemctl status mariadb"'. You can also ssh into the dbserv and run 'systemctl status mariadb'.
+
 # BONUS QUESTION
 
 How many different ways can use come up with to verify that the `mariadb` service is running?
+
+A:
+1. systemctl status mariadb, shows service state.
+2. systemctl is-active mariadb, returns "active" if running.
+3. systemctl is-enabled mariadb, shows if it starts at boot.
+6. mysql -u root -e "SELECT VERSION();", if this returns a version, the server is working.
+7. ansible db -m service_facts, ansible service inventory.
+8. ansible db -a "systemctl status mariadb", remote command via Ansible.

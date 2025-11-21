@@ -1,0 +1,18 @@
+---
+# This playbook applies reusable roles to configure web and database servers with their respective configurations and tasks.
+- name: Configure the web server(s) according to specs
+  hosts: web
+  become: yes
+  vars_files:
+    - vault.yml
+  roles:
+    - webserver
+
+# Applies the database server role to configure MariaDB and related services on database hosts.
+- name: Configure the database server(s)
+  hosts: db
+  become: yes
+  vars_files:
+    - vault.yml
+  roles:
+    - dbserver

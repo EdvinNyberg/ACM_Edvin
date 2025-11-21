@@ -1,0 +1,24 @@
+# Unit section defines service metadata and startup dependencies
+[Unit]
+# Human-readable description of the service
+Description=Node Exporter
+# Service wants a network connection but will start if network is unavailable
+Wants=network-online.target
+# Service starts after network is fully online for reliable connectivity
+After=network-online.target
+
+# Service section configures how the service runs
+[Service]
+# Runs the service with the dedicated node_exporter user for security
+User=node_exporter
+# Runs the service with the node_exporter group
+Group=node_exporter
+# Simple service type means the process stays in foreground
+Type=simple
+# Command to start the Node Exporter binary
+ExecStart=/usr/local/bin/node_exporter
+
+# Install section specifies when the service is enabled during boot
+[Install]
+# Service is wanted by the default multi-user target at boot time
+WantedBy=default.target

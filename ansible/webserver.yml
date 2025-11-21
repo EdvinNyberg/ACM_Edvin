@@ -1,0 +1,17 @@
+---
+# This playbook installs nginx and ensures it starts automatically on boot to serve web traffic.
+- name: Install a webserver
+  hosts: web
+  become: true
+  tasks:
+    # Installs the latest version of nginx web server.
+    - name: Ensure nginx is installed
+      ansible.builtin.package:
+        name: nginx
+        state: latest
+
+    # Enables nginx to automatically start on system boot for persistent web service availability.
+    - name: Ensure nginx is started at boot
+      ansible.builtin.service:
+        name: nginx
+        enabled: true

@@ -1,0 +1,57 @@
+# Run with ansible-playbook -i hosts 14-firewall.yml --ask-become-pass
+
+---
+- name: Configure firewall on web servers
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure firewalld and python3-firewall are installed
+      ansible.builtin.package:
+        name:
+          - firewalld
+          - python3-firewall
+        state: present
+
+    - name: Ensure firewalld service is running and enabled
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Allow HTTP through firewalld
+      ansible.posix.firewalld:
+        service: http
+        permanent: true
+        state: enabled
+        immediate: yes
+
+    - name: Allow HTTPS through firewalld
+      ansible.posix.firewalld:
+        service: https
+        permanent: true
+        state: enabled
+        immediate: yes
+
+- name: Configure firewall on database servers
+  hosts: db
+  become: true
+  tasks:
+    - name: Ensure firewalld and python3-firewall are installed
+      ansible.builtin.package:
+        name:
+          - firewalld
+          - python3-firewall
+        state: present
+
+    - name: Ensure firewalld service is running and enabled
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Allow MySQL through firewalld
+      ansible.posix.firewalld:
+        service: mysql
+        permanent: true
+        state: enabled
+        immediate: yes

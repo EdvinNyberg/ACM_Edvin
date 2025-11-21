@@ -1,0 +1,22 @@
+---
+- name: Create IT department users
+  hosts: web
+  become: true
+  vars_files:
+    - vault.yml
+
+  tasks:
+
+    - name: Create users with appropriate groups
+      ansible.builtin.user:
+        name: "{{ item.name }}"
+        groups: "{{ item.groups | join(',') }}"
+        password: "{{ db_password | password_hash('sha512') }}"
+        state: present
+        append: yes
+        comment: "{{ item.gecos }}"
+      loop:
+        - { name: alovelace, groups: ["wheel", "audio", "video"], gecos: "Ada Lovelace" }
+        - { name: aturing, groups: ["tape"], gecos: "Alan Turing" }
+        - { name: edijkstra, groups: ["tcpdump"], gecos: "Edsger Dijkstra" }
+        - { name: ghopper, groups: ["wheel", "audio"], gecos: "Grace Hopper" }

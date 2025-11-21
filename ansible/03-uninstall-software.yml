@@ -1,0 +1,19 @@
+---
+ # Playbook: Remove previously installed software
+ # Purpose: Uninstall a small set of packages from all targeted hosts.
+ # Notes:
+ # - Uses the generic `package` module so it works with apt, yum/dnf, etc.
+ # - `become: true` is required to remove packages (needs root privileges).
+- name: Remove previously installed software
+  hosts: all
+  # `tasks` defines actions to run on the hosts matched by `hosts` above
+  tasks:
+    - name: Ensure vim, bash-completion, and qemu-guest-agent are removed
+      # Run this task with privilege escalation (become to root)
+      become: true
+      # The core package module delegates to the underlying package manager
+      ansible.builtin.package:
+        # Comma-separated list of packages to remove. Update names per distro if necessary.
+        name: vim,bash-completion,qemu-guest-agent
+        # Ensure these packages are not installed on the target systems
+        state: absent

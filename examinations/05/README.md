@@ -79,7 +79,13 @@ a number of keys and values that come from the output of the Ansible module.
 
 What does the output look like the first time you run this playbook?
 
+A:
+
+changed: [192.168.121.151] => {"changed": true, "name": "nginx", "state": "started", "status":...
+
 What does the output look like the second time you run this playbook?
+
+[192.168.121.151] => {"changed": false, 
 
 # QUESTION B
 
@@ -124,7 +130,16 @@ a self signed certificate.
 What is the disadvantage of having a task that _always_ makes sure a service is restarted, even if there is
 no configuration change?
 
+A:
+- Causes service interruption
+- May drop active user connections
+- Creates unwanted downtime
+- Is slower and inefficient
+- Can be risky in production
+
 # BONUS QUESTION
 
 There are at least two _other_ modules, in addition to the `ansible.builtin.service` module that can restart
 a `systemd` service with Ansible. Which modules are they?
+
+A: ansible.builtin.systemd and community.general.systemd_service

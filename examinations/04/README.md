@@ -53,12 +53,16 @@ module.
 
 How can we make the web server start with an addition of just one line to the playbook above?
 
+A: We add state: started
+
 # QUESTION B
 
 You make have noted that the `become: true` statement has moved from a specific task to the beginning
 of the playbook, and is on the same indentation level as `tasks:`.
 
 What does this accomplish?
+
+A: become: true at the play level applies to all tasks in the play.
 
 # QUESTION C
 
@@ -72,8 +76,15 @@ log in to the machine and make sure that there are no `nginx` processes running.
 
 Why did we change the order of the tasks in the `04-uninstall-webserver.yml` playbook?
 
+A: If you remove the package first, the service might fail to stop properly.
+
 # BONUS QUESTION
 
 Consider the output from the tasks above, and what we were actually doing on the machine.
 
 What is a good naming convention for tasks? (What SHOULD we write in the `name:` field`?)
+
+A:
+- Clearly describe the action being performed.
+- Include the target resource (package, service, file, etc.).
+- Be readable, so someone can understand playbook output at a glance.

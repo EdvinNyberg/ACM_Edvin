@@ -1,0 +1,44 @@
+---
+- name: Install HTTPS config for nginx
+  hosts: web
+  become: true
+
+
+  tasks:
+    - name: Install https.conf into nginx conf.d
+      ansible.builtin.copy:
+        src: files/https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Ensure /var/www/example.internal/html/ exists
+      ansible.builtin.file:
+        path: /var/www/example.internal/html
+        state: directory
+        owner: nginx
+        group: nginx
+        mode: '0755'
+        setype: httpd_sys_content_t
+      register: dir
+
+    - name: Upload custom index.html to example.internal
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /var/www/example.internal/html/index.html
+        setype: httpd_sys_content_t
+      register: index
+
+    - name: Ensure the nginx configuration is updated for example.internal
+      ansible.builtin.copy:
+        src: files/example.internal.conf
+        dest: /etc/nginx/conf.d/example.internal.conf
+      register: vhconfig
+
+    - name: Restart nginx to load HTTPS config
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+      when: vhconfig.changed or index.changed or dir.changed
+

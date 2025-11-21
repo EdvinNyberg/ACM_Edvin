@@ -1,0 +1,33 @@
+# Nginx server block for example.internal configured with both HTTP and HTTPS
+server {
+    # Listens on HTTP (port 80) using the host's default IPv4 address
+    listen {{ ansible_default_ipv4.address }}:80;
+    # Listens on HTTPS (port 443) with SSL/TLS enabled using the host's default IPv4 address
+    listen {{ ansible_default_ipv4.address }}:443 ssl;
+    # Root directory where website content is served from
+    root /var/www/example.internal/html;
+    # Default file to serve when a directory is requested
+    index index.html;
+    # Server name for virtual host matching
+    server_name example.internal;
+
+    # SSL/TLS certificate configuration for HTTPS
+    # Path to the SSL certificate file
+    ssl_certificate "/etc/pki/nginx/server.crt";
+    # Path to the private key file
+    ssl_certificate_key "/etc/pki/nginx/private/server.key";
+    # Enables session caching in shared memory for performance (1MB shared cache)
+    ssl_session_cache shared:SSL:1m;
+    # Session cache timeout set to 10 minutes
+    ssl_session_timeout  10m;
+    # Uses system-defined cipher profile for secure encryption
+    ssl_ciphers PROFILE=SYSTEM;
+    # Prefers server-selected ciphers over client suggestions
+    ssl_prefer_server_ciphers on;
+
+    # Request handling for all paths
+    location / {
+        # Tries to serve the requested file, then directory, else returns 404
+        try_files $uri $uri/ =404;
+    }
+}

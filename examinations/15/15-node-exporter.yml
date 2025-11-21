@@ -1,0 +1,70 @@
+---
+- name: Install Node Exporter on web servers
+  hosts: web
+  become: true
+  tasks:
+    - name: Ensure node_exporter user exists
+      ansible.builtin.user:
+        name: node_exporter
+        shell: /sbin/nologin
+        system: yes
+        state: present
+
+    - name: Create installation directory
+      ansible.builtin.file:
+        path: /usr/local/bin
+        state: directory
+        mode: '0755'
+
+    - name: Copy Node Exporter tarball
+      ansible.builtin.copy:
+        src: node_exporter-1.6.1.linux-amd64.tar.gz
+        dest: /tmp/node_exporter.tar.gz
+        mode: '0644'
+
+    - name: Extract Node Exporter binary
+      ansible.builtin.unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /tmp/
+        remote_src: yes
+        creates: /tmp/node_exporter-1.6.1.linux-amd64/node_exporter
+
+    - name: Move node_exporter binary to /usr/local/bin
+      ansible.builtin.command:
+        cmd: mv /tmp/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/node_exporter
+      args:
+        creates: /usr/local/bin/node_exporter
+
+    - name: Set permissions for node_exporter binary
+      ansible.builtin.file:
+        path: /usr/local/bin/node_exporter
+        owner: node_exporter
+        group: node_exporter
+        mode: '0755'
+
+    - name: Install systemd service for Node Exporter
+      ansible.builtin.template:
+        src: node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
+
+    - name: Enable and start Node Exporter service
+      ansible.builtin.systemd:
+        name: node_exporter
+        enabled: yes
+        state: started
+
+    - name: Ensure Node Exporter port is allowed in firewall
+      ansible.posix.firewalld:
+        service: node_exporter
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes

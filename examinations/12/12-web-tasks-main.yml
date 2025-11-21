@@ -1,0 +1,39 @@
+# Place file in roles/webserver/tasks/main.yml
+
+---
+# Install nginx
+- name: Ensure nginx is installed
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+# Install basic HTTPS config
+- name: Install https.conf into nginx conf.d
+  ansible.builtin.copy:
+    src: https.conf
+    dest: /etc/nginx/conf.d/https.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+# Ensure web root exists
+- name: Ensure /var/www/example.internal/html exists
+  ansible.builtin.file:
+    path: /var/www/example.internal/html
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: '0755'
+
+# Upload HTML file
+- name: Upload custom index.html
+  ansible.builtin.copy:
+    src: index.html
+    dest: /var/www/example.internal/html/index.html
+
+# Install templated nginx config
+- name: Install example.internal.conf (templated)
+  ansible.builtin.template:
+    src: example.internal.conf.j2
+    dest: /etc/nginx/conf.d/example.internal.conf
+  notify: restart nginx

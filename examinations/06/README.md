@@ -167,6 +167,8 @@ There are several ways to accomplish this, and there is no _best_ way to do this
 
 Is this a good way to handle these types of conditionals? What do you think?
 
+A: It works, but it becomes messy when there are many tasks or many things can trigger a restart.
+
 # BONUS QUESTION
 
 Imagine you had a playbook with hundreds of tasks to be done on several hosts, and each one of these tasks
@@ -177,3 +179,12 @@ would you like the flow to work?
 
 Describe in simple terms what your preferred task flow would look like, not necessarily implemented in
 Ansible, but in general terms.
+
+A:
+
+- Run all configuration changes first, collect all modifications but do nothing immediately.
+- For each service (like nginx), track if anything relevant changed.
+- At the end of the playbook:
+- Only restart services that actually need it.
+- Restart each service only once, even if 20 tasks changed files.
+- Use batching / rolling restarts.

@@ -1,0 +1,48 @@
+---
+# roles/webserver/tasks/main.yml
+
+# Installs nginx web server package.
+- name: Ensure nginx is installed
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+# Deploys HTTPS configuration file to nginx and triggers a reload.
+- name: Install https.conf into nginx conf.d
+  ansible.builtin.copy:
+    src: files/https.conf
+    dest: /etc/nginx/conf.d/https.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload nginx
+
+# Creates the web root directory structure with appropriate permissions for nginx to serve content.
+- name: Ensure /var/www/example.internal/html exists
+  ansible.builtin.file:
+    path: /var/www/example.internal/html
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: '0755'
+
+# Uploads the custom index.html file to the web root for nginx to serve.
+- name: Upload custom index.html
+  ansible.builtin.copy:
+    src: files/index.html
+    dest: /var/www/example.internal/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
+
+# Deploys the templated nginx configuration with variable substitution and triggers a reload.
+- name: Install example.internal.conf (templated)
+  ansible.builtin.template:
+    src: templates/example.internal.conf.j2
+    dest: /etc/nginx/conf.d/example.internal.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload nginx

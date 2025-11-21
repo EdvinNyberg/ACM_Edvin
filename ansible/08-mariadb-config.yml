@@ -1,0 +1,60 @@
+---
+# Playbook: Install and configure MariaDB
+# This playbook targets hosts in the `db` group and performs basic
+# installation and configuration steps required to run MariaDB for
+# a simple web application.
+- name: Install and configure MariaDB
+  hosts: db
+  become: true
+  tasks:
+
+    # Install the MariaDB server package. On Debian/Ubuntu this is
+    # usually `mariadb-server`. On other distros the package name
+    # may differ. Adjust as needed.
+    - name: Ensure MariaDB server is installed
+      ansible.builtin.package:
+        name: mariadb-server
+        state: present
+
+    # Install the PyMySQL library so Ansible's MySQL/MariaDB modules
+    # can connect using Python on the control/target host. Package
+    # name may vary between distributions.
+    - name: Ensure PyMySQL Python library is installed (required for MySQL modules)
+      ansible.builtin.package:
+        name: python3-PyMySQL
+        state: present
+
+    # Ensure the MariaDB service is running and enabled at boot.
+    - name: Ensure MariaDB service is enabled and started
+      ansible.builtin.service:
+        name: mariadb
+        state: started
+        enabled: true
+
+    # Create a database named `webappdb` using the local Unix socket for
+    # authentication as the `root` user. Using `login_unix_socket` is a
+    # common approach when running on the DB host and avoiding password
+    # authentication in playbooks, but ensure the socket path is correct
+    # for your system.
+    - name: Create database 'webappdb'
+      community.mysql.mysql_db:
+        name: webappdb
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        login_user: root
+
+    # Create a database user `webappuser` with privileges on the
+    # `webappdb` database. This example uses a plaintext password
+    # which is insecure for production. Use Ansible Vault or other
+    # secret management to store passwords.
+    - name: Create database user 'webappuser' with password and privileges
+      community.mysql.mysql_user:
+        name: webappuser
+        password: "secretpassword"
+        priv: "webappdb.*:ALL"
+        host: "%"
+        state: present
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        login_user: root
+
+

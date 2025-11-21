@@ -1,0 +1,44 @@
+---
+# This playbook configures firewalld to selectively open ports based on server role: HTTP/HTTPS for web servers and MySQL for database servers.
+- name: Configure firewall on all servers
+  hosts: all
+  become: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  tasks:
+    # Installs firewalld and the Python library needed for Ansible to manage firewall rules.
+    - name: Ensure firewalld and python3-firewall are installed
+      ansible.builtin.package:
+        name:
+          - firewalld
+          - python3-firewall
+        state: present
+
+    # Starts firewalld and enables it to run on boot.
+    - name: Ensure firewalld service is enabled and running
+      ansible.builtin.service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    # Opens HTTP and HTTPS ports on web servers to allow incoming web traffic.
+    - name: Enable HTTP and HTTPS on web servers
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: yes
+      loop:
+        - http
+        - https
+      when: "'web' in group_names"
+
+    # Opens MySQL port on database servers to allow database connections.
+    - name: Enable MySQL on database servers
+      ansible.posix.firewalld:
+        service: mysql
+        permanent: true
+        state: enabled
+        immediate: yes
+      when: "'db' in group_names"

@@ -1,0 +1,80 @@
+---
+# This playbook installs Node Exporter on web servers, configures it as a systemd service, and opens firewall access for metrics collection.
+- name: Install Node Exporter on web servers
+  hosts: web
+  become: true
+  tasks:
+    # Creates a dedicated non-login system user for Node Exporter to run with minimal privileges.
+    - name: Ensure node_exporter user exists
+      ansible.builtin.user:
+        name: node_exporter
+        shell: /sbin/nologin
+        system: yes
+        state: present
+
+    # Ensures the system directory exists where the Node Exporter binary will be installed.
+    - name: Create installation directory
+      ansible.builtin.file:
+        path: /usr/local/bin
+        state: directory
+        mode: '0755'
+
+    # Copies the Node Exporter tarball to the temporary directory for extraction.
+    - name: Copy Node Exporter tarball
+      ansible.builtin.copy:
+        src: node_exporter-1.6.1.linux-amd64.tar.gz
+        dest: /tmp/node_exporter.tar.gz
+        mode: '0644'
+
+    # Extracts the compressed tarball to access the Node Exporter binary.
+    - name: Extract Node Exporter binary
+      ansible.builtin.unarchive:
+        src: /tmp/node_exporter.tar.gz
+        dest: /tmp/
+        remote_src: yes
+        creates: /tmp/node_exporter-1.6.1.linux-amd64/node_exporter
+
+    # Moves the Node Exporter binary to the system binary directory for global access.
+    - name: Move node_exporter binary to /usr/local/bin
+      ansible.builtin.command:
+        cmd: mv /tmp/node_exporter-1.6.1.linux-amd64/node_exporter /usr/local/bin/node_exporter
+      args:
+        creates: /usr/local/bin/node_exporter
+
+    # Sets proper ownership and execute permissions for the Node Exporter binary.
+    - name: Set permissions for node_exporter binary
+      ansible.builtin.file:
+        path: /usr/local/bin/node_exporter
+        owner: node_exporter
+        group: node_exporter
+        mode: '0755'
+
+    # Deploys the systemd service file from a template to enable Node Exporter as a managed service.
+    - name: Install systemd service for Node Exporter
+      ansible.builtin.template:
+        src: node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reload systemd
+
+    # Enables the Node Exporter service to start on boot and starts it immediately.
+    - name: Enable and start Node Exporter service
+      ansible.builtin.systemd:
+        name: node_exporter
+        enabled: yes
+        state: started
+
+    # Opens the Node Exporter service port in firewalld to allow Prometheus to scrape metrics.
+    - name: Ensure Node Exporter port is allowed in firewall
+      ansible.posix.firewalld:
+        service: node_exporter
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+  handlers:
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
