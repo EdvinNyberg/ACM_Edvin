@@ -1,22 +1,58 @@
-# Place file in roles/webserver/tasks/main.yml
-
 ---
-# Install nginx
+# roles/webserver/tasks/main.yml
+
+# Installs nginx web server package.
 - name: Ensure nginx is installed
   ansible.builtin.package:
     name: nginx
     state: present
 
-# Install basic HTTPS config
+# Creates the certificate storage directory with appropriate permissions for nginx.
+- name: Ensure the /etc/pki/nginx directory exists
+  ansible.builtin.file:
+    path: /etc/pki/nginx
+    state: directory
+    mode: "0755"
+    owner: root
+
+# Creates a restricted private directory for storing the sensitive private key.
+- name: Ensure we have a /etc/pki/nginx/private directory
+  ansible.builtin.file:
+    path: /etc/pki/nginx/private
+    state: directory
+    mode: "0700"
+    owner: root
+
+# Installs the Python cryptography library needed for certificate generation.
+- name: Ensure we have necessary software installed
+  ansible.builtin.package:
+    name: python3-cryptography
+    state: present
+
+# Generates a private key file used to create and sign the self-signed certificate.
+- name: Ensure we have a private key for our certificate
+  community.crypto.openssl_privatekey:
+    path: /etc/pki/nginx/private/server.key
+
+# Creates a self-signed X.509 certificate signed with the private key for HTTPS.
+- name: Create a self-signed certificate
+  community.crypto.x509_certificate:
+    path: /etc/pki/nginx/server.crt
+    privatekey_path: /etc/pki/nginx/private/server.key
+    provider: selfsigned
+
+# Deploys HTTPS configuration file to nginx and triggers a reload.
 - name: Install https.conf into nginx conf.d
   ansible.builtin.copy:
-    src: https.conf
+    src: files/https.conf
     dest: /etc/nginx/conf.d/https.conf
     owner: root
     group: root
     mode: '0644'
+  notify:
+    - reload nginx
 
-# Ensure web root exists
+# Creates the web root directory structure with appropriate permissions for nginx to serve content.
 - name: Ensure /var/www/example.internal/html exists
   ansible.builtin.file:
     path: /var/www/example.internal/html
@@ -25,15 +61,22 @@
     group: nginx
     mode: '0755'
 
-# Upload HTML file
+# Uploads the custom index.html file to the web root for nginx to serve.
 - name: Upload custom index.html
   ansible.builtin.copy:
-    src: index.html
+    src: files/index.html
     dest: /var/www/example.internal/html/index.html
+    owner: root
+    group: root
+    mode: '0644'
 
-# Install templated nginx config
+# Deploys the templated nginx configuration with variable substitution and triggers a reload.
 - name: Install example.internal.conf (templated)
   ansible.builtin.template:
-    src: example.internal.conf.j2
+    src: templates/example.internal.conf.j2
     dest: /etc/nginx/conf.d/example.internal.conf
-  notify: restart nginx
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - reload nginx
